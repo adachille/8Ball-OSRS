@@ -1,0 +1,8 @@
+name: 8ball
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - numpy
+  - pandas
+  - requests
