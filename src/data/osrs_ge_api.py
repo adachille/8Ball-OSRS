@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
 
-class OldSchoolGEAPI:
+class OldSchoolGEAPIInterface:
     """
     A class used to interaact with the Old School Runescape Grand Exchange API
 
@@ -41,17 +41,6 @@ class OldSchoolGEAPI:
         return r.json()['item'] 
 
 # TODO: scary to rely on a single pastebin url, consider how to fix this
-def refresh_get_item_ids():
-    item_list = requests.get("https://pastebin.com/raw/LhxJ7GRG").json()
-    pd.DataFrame(item_list).to_csv("./item_ids.csv", index=False)
-
-if __name__ == "__main__":
-    refresh_get_item_ids() # refreshes the item id csv
-    item_ids = pd.read_csv('item_ids.csv')
-    print(item_ids.shape)
-
-    # Test the get_item_details method
-    ge_api = OldSchoolGEAPI()
-    for item_id in item_ids.id[:10]:
-        item_details = ge_api.get_item_details(item_id)
-        print(item_details['name'], item_details['current'])
+def get_all_item_ids():
+    item_ids = requests.get("https://pastebin.com/raw/LhxJ7GRG").json()
+    return item_ids
