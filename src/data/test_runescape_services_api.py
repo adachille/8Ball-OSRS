@@ -1,6 +1,6 @@
 import pytest
 import requests
-from osrs_ge_api import OldSchoolGEAPIInterface, get_all_item_ids
+from runescape_services_api import OldSchoolGEAPIInterface, get_all_item_ids
 
 class TestOldSchoolGEAPIInterface: 
     def test_get_item_details_gets_cannonball(self):

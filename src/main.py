@@ -1,5 +1,5 @@
 import pandas as pd
-from data.osrs_ge_api import OldSchoolGEAPIInterface, get_all_item_ids
+from data.runescape_services_api import OldSchoolGEAPIInterface, get_all_item_ids
 
 if __name__ == "__main__":
     # refreshes the item ids csv
