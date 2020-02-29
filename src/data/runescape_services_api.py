@@ -45,7 +45,6 @@ class OldSchoolGEAPIInterface:
         r.raise_for_status()
         return r.json()['item'] 
 
-    # TODO: Testing
     def get_number_of_items(self):
         """Gets the total number of items in the runescape services GE Database
         
@@ -64,7 +63,6 @@ class OldSchoolGEAPIInterface:
         r.raise_for_status()
         return r.json()["total"]
 
-    # TODO: Testing
     def get_paginated_items_details(self, starting_char="a", page=1):
         """Retrieves 12 items given pagination parameters
 
@@ -87,12 +85,11 @@ class OldSchoolGEAPIInterface:
             a list containing dictionaries of the details of 12 items
         """
         # API requires letter and page
-        r = requests.get(self.BASE_URL + "/api/catalogue/items.json", 
-            params={"category": 1, "alpha": starting_char, "page": page})
+        r = requests.get(self.BASE_URL + f"/api/catalogue/items.json?category=1&alpha={starting_char}&page={page}")
         r.raise_for_status()
         return r.json()["items"]
 
-    # TODO: testing       
+    # TODO: Figure out a way to test this function       
     def get_and_save_item_ids_to_csv(self, filename):
         """Saves the id's and associated names of every item in the runescape services GE Database to a
         CSV with filename passed in.
@@ -110,9 +107,16 @@ class OldSchoolGEAPIInterface:
                         ]
         n_items = self.get_number_of_items()
 
+        # JANK ALERT: We force the process to sleep every sleep_interval seconds for 
+        # sleep_time seconds because the services api starts returning misformed JSONs 
+        # if too many requests happen too quickly.
+        sleep_counter = 1  # Tracks when to sleep
+        sleep_interval = 5 # Every 5 iterations, sleep. Prevents api from returning misformed api
+        sleep_time = 10    # Time to sleep every n iterations
+
         # Iterate through each starting character and collect id's for each page under that character
         for char in STARTING_CHARS:
-            # print(f"Getting items that begin with char: {char}") # Debug
+            print(f"Getting items that begin with char: {char}") # Debug
             no_items_left = False
             page = 1
             while not no_items_left:
@@ -122,19 +126,24 @@ class OldSchoolGEAPIInterface:
                     if len(new_items) == 0:
                         no_items_left = True
                     else:
+                        page += 1
                         for item in new_items:
                             item_ids.append({"id": item["id"], "name": item["name"]})
-                        page += 1
                     
-                    # This is essential, as the api returns a misformed JSON if requests come in to fast
-                    time.sleep(5) # TODO: investigate this issue further
+                    # Sleep after sleep_interval iterations
+                    if sleep_counter % sleep_interval == 0:
+                        time.sleep(sleep_time)
                 except Exception as e:
-                    # This except is triggered when the issue discussed above occurs
+                    # This except is triggered when the issue discussed above occurs,
+                    # just let it rest for a minute
                     print('______________')
                     print(char, page)
                     print(e)
                     print('______________')
-                    no_items_left = True
+                    time.sleep(60)
+                
+                sleep_counter += 1
+
 
         if n_items != len(item_ids):
             print(f"WARNING: {n_items} in DB, only {len(item_ids)} written.")
