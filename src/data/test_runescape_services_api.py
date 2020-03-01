@@ -40,10 +40,29 @@ class TestOldSchoolGEAPIInterface:
         assert type(item_details) == list
         assert len(item_details) == 0
     
-    # This is commented out as it takes a ton of time to run and it's a sketchy test that
-    # could fail because of the api, not the code itself
-    def test_get_and_save_item_ids_to_csv(self):
+    # # This is commented out as it takes a ton of time to run and it's a sketchy test that
+    # # could fail because of the api, not the code itself
+    # def test_get_and_save_item_ids_to_csv(self):
+    #     api_interface = OldSchoolGEAPIInterface()
+    #     api_interface.get_and_save_item_ids_to_csv("test.csv")
+    #     assert len(pd.read_csv("test.csv")) > 0
+    #     os.remove("test.csv")
+    
+    def test_get_item_price_history(self):
         api_interface = OldSchoolGEAPIInterface()
-        api_interface.get_and_save_item_ids_to_csv("test.csv")
-        assert len(pd.read_csv("test.csv")) > 0
-        os.remove("test.csv")
+        cannonball_id = 2
+        item_price_history = api_interface.get_item_price_history(cannonball_id)
+        assert type(item_price_history) == dict
+
+        timestamps = list(item_price_history.keys())
+        assert len(timestamps) == 180
+        prices = list(item_price_history.values())
+        assert len(prices) == 180
+
+    def test_get_item_price_history_fails_on_bad_id(self):
+        api_interface = OldSchoolGEAPIInterface()
+        bad_id = -1
+        with pytest.raises(Exception) as excep_info:
+            api_interface.get_item_details(bad_id)
+        print(excep_info.type)
+        assert excep_info.type == requests.exceptions.HTTPError

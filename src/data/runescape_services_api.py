@@ -151,3 +151,26 @@ class OldSchoolGEAPIInterface:
         # Create a csv for the item ids
         item_ids = pd.DataFrame(item_ids)
         item_ids.to_csv(filename, index=False)
+    
+    # TODO: test
+    def get_item_price_history(self, item_id):
+        """Gets the item's price history for the last 6 months
+
+        Parameters
+        ----------
+        item_id : int
+            Id of an item
+
+        Raises
+        ----------
+        requests.exceptions.HTTPError:
+            If the request got an error status - likely due to an invalid id
+
+        Returns
+        -------
+        dict
+            A dictionary with timestamp keys for the last 6 months and prices as values
+        """
+        r = requests.get(self.BASE_URL + f"/api/graph/{item_id}.json")
+        r.raise_for_status()
+        return r.json()['daily']
