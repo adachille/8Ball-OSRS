@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 import time
 
+# TODO: make this file return information in a more specific way, needs a stricter interface
 class OldSchoolGEAPIInterface:   
     """
     A class used to interaact with the OSRS Services Grand Exchange API.
