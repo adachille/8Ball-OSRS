@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+from pathlib import Path
 import time
 
 # TODO: make this file return information in a more specific way, needs a stricter interface
@@ -153,7 +154,6 @@ class OldSchoolGEAPIInterface:
         item_ids = pd.DataFrame(item_ids)
         item_ids.to_csv(filename, index=False)
     
-    # TODO: test
     def get_item_price_history(self, item_id):
         """Gets the item's price history for the last 6 months
 
@@ -175,3 +175,44 @@ class OldSchoolGEAPIInterface:
         r = requests.get(self.BASE_URL + f"/api/graph/{item_id}.json")
         r.raise_for_status()
         return r.json()['daily']
+    
+    # TODO: test
+    def update_price_history_csv(self, item_id):
+        """ Takes in an item_id and gets the item's price history for the last 6 months. It then performs a union between
+        the new price history data and the price history data in the csv associated with the item.
+
+        Parameters
+        ----------
+        item_id : int
+            Id of an item
+
+        Raises
+        ----------
+        requests.exceptions.HTTPError:
+            If the request got an error status - likely due to an invalid id
+        """
+        # Get api data
+        price_history = self.get_item_price_history(item_id)
+
+        # Get a DataFrame from api data
+        timestamps = list(price_history.keys())
+        prices = list(price_history.values())
+        prices_df = pd.DataFrame(data={"timestamps": timestamps, "prices": prices})
+        # Convert string timestamps to proper pandas timestamps
+        prices_df["timestamps"] = pd.to_numeric(prices_df["timestamps"]) / 1000 # convert to seconds
+        # Convert to dates
+        prices_df["dates"] = pd.to_datetime(prices_df["timestamps"], unit='s')
+        prices_df = prices_df.set_index("dates")
+
+        # Get old csv for item and add these dates to it
+        # item_csv_path = Path("./runescape_services")
+        # print(path.parent)
+        try:
+            old_prices_df = pd.read_csv(f"./data/{item_id}_price_history.csv", index_col="dates", parse_dates=["dates"])
+            # only get the rows that have a date after the last date of old_prices_df
+            prices_df = prices_df[prices_df.index > old_prices_df.index[-1]]
+            new_prices_df = pd.concat([old_prices_df, prices_df])
+            new_prices_df.to_csv(f"./data/{item_id}_price_history.csv")
+        except FileNotFoundError as e:
+            print("Preexisting price_history file not found, creating one")
+            prices_df.to_csv(f"./data/{item_id}_price_history.csv")
