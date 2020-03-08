@@ -66,3 +66,19 @@ class TestOldSchoolGEAPIInterface:
             api_interface.get_item_details(bad_id)
         print(excep_info.type)
         assert excep_info.type == requests.exceptions.HTTPError
+    
+    def test_update_price_history_csv(self):
+        api_interface = OldSchoolGEAPIInterface()
+        cannonball_id = 2
+        api_interface.update_price_history_csv(cannonball_id, "./")
+        cannonball_price_history = pd.read_csv(f"./{cannonball_id}_price_history.csv")
+        assert len(cannonball_price_history.index) == 180
+        os.remove(f"./{cannonball_id}_price_history.csv")
+
+    def test_update_price_history_csv_fails_on_bad_id(self):
+        api_interface = OldSchoolGEAPIInterface()
+        bad_id = -1
+        with pytest.raises(Exception) as excep_info:
+            api_interface.get_item_details(bad_id)
+        print(excep_info.type)
+        assert excep_info.type == requests.exceptions.HTTPError

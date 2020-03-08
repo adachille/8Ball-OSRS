@@ -12,7 +12,7 @@ if __name__ == "__main__":
     # ge_api.get_and_save_item_ids_to_csv('item_ids.csv') 
 
     # Get item ids
-    item_ids = pd.read_csv('item_ids.csv')
+    item_ids = pd.read_csv('item_ids_02_28_2020.csv')
     print(item_ids.shape)
     cannonball_id = item_ids[item_ids['name'] == 'Cannonball'].id.values[0]
 
@@ -21,9 +21,10 @@ if __name__ == "__main__":
     print(item_details)
 
     # Update price history for cannonballs
-    ge_api.update_price_history_csv(cannonball_id)
-"""
-    # Update all the price histories (make sure to test on subset)
+    ge_api.update_price_history_csv(cannonball_id, "./data/")
+
+    """
+    # Update all the price histories
     # JANK ALERT: We force the process to sleep every sleep_interval seconds for 
     # sleep_time seconds because the services api starts returning misformed JSONs 
     # if too many requests happen too quickly.
@@ -42,7 +43,7 @@ if __name__ == "__main__":
         while not price_history_updated and attempts < 5:
             try:
                 # Update price history
-                ge_api.update_price_history_csv(item_id)
+                ge_api.update_price_history_csv(item_id, "./data/")
                 price_history_updated = True
             except Exception as e:
                 # This except is triggered when the issue discussed above occurs,
@@ -54,4 +55,5 @@ if __name__ == "__main__":
                 time.sleep(60)
             
         sleep_counter += 1
-"""
+
+    """

@@ -177,7 +177,7 @@ class OldSchoolGEAPIInterface:
         return r.json()['daily']
     
     # TODO: test
-    def update_price_history_csv(self, item_id):
+    def update_price_history_csv(self, item_id, datapath):
         """ Takes in an item_id and gets the item's price history for the last 6 months. It then performs a union between
         the new price history data and the price history data in the csv associated with the item.
 
@@ -208,11 +208,11 @@ class OldSchoolGEAPIInterface:
         # item_csv_path = Path("./runescape_services")
         # print(path.parent)
         try:
-            old_prices_df = pd.read_csv(f"./data/{item_id}_price_history.csv", index_col="dates", parse_dates=["dates"])
+            old_prices_df = pd.read_csv(f"{datapath}{item_id}_price_history.csv", index_col="dates", parse_dates=["dates"])
             # only get the rows that have a date after the last date of old_prices_df
             prices_df = prices_df[prices_df.index > old_prices_df.index[-1]]
             new_prices_df = pd.concat([old_prices_df, prices_df])
-            new_prices_df.to_csv(f"./data/{item_id}_price_history.csv")
+            new_prices_df.to_csv(f"{datapath}{item_id}_price_history.csv")
         except FileNotFoundError as e:
             print("Preexisting price_history file not found, creating one")
-            prices_df.to_csv(f"./data/{item_id}_price_history.csv")
+            prices_df.to_csv(f"{datapath}{item_id}_price_history.csv")
