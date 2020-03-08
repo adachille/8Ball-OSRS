@@ -130,3 +130,6 @@ dmypy.json
 
 # Jupyter notebooks
 Testing-Notebook.ipynb
+
+# Folders that shouldn't be committed
+data/
