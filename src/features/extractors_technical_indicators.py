@@ -61,7 +61,7 @@ class ExtractorTechnicalIndicators:
         Parameters
         ----------
         prices : ndarray
-            numpy array of prices to get the SMA from
+            numpy array of prices to get the EMA from
         n : int
             the period to use for the moving average
         weighting_factor : float
@@ -102,3 +102,41 @@ class ExtractorTechnicalIndicators:
 
         """
         pass
+
+    # TODO: test
+    def std_dev(self, prices):
+        """Get the standard deviation of the prices
+
+        Standard deviation is a classic volatility technical indicator.
+
+        Parameters
+        ----------
+        prices : ndarray
+            numpy array of prices to get the standard deviation from
+
+        Returns
+        -------
+        float
+            the standard deviation of prices
+        """
+        return np.std(prices)
+    
+    # TODO: test
+    def bollinger_bands(self, prices, n=20):
+        """Get the standard deviation of the prices
+
+        Standard deviation is a classic volatility technical indicator.
+
+        Parameters
+        ----------
+        prices : ndarray
+            numpy array of prices to get the Bollinger bands from
+
+        Returns
+        -------
+        (ndarray, ndarray, ndarray)
+            three ndarray's, one with the lower bollinger band, the sma, and one with the upper bollinger band
+        """
+        sma = self.simple_moving_average(prices, n)
+        std_dev = self.std_dev(prices)
+        return (sma - 2*std_dev, sma, sma + 2*std_dev)

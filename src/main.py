@@ -11,10 +11,10 @@ if __name__ == "__main__":
     ge_api = OldSchoolGEAPIInterface()
 
     # # refreshes the item ids csv
-    # ge_api.get_and_save_item_ids_to_csv('item_ids.csv') 
+    ge_api.get_and_save_item_ids_to_csv('item_ids_04_02_2020.csv') 
 
     # Get item ids
-    item_ids = pd.read_csv('item_ids_02_28_2020.csv')
+    item_ids = pd.read_csv('item_ids_04_02_2020.csv')
     print(item_ids.shape)
     cannonball_id = item_ids[item_ids['name'] == 'Cannonball'].id.values[0]
 
@@ -58,7 +58,7 @@ if __name__ == "__main__":
                     time.sleep(60)
                 
             sleep_counter += 1
-    
+
     cannonball_price_history = pd.read_csv(f'./data/{cannonball_id}_price_history.csv')
     cannonball_prices = cannonball_price_history['prices'].to_numpy()
 
@@ -71,3 +71,5 @@ if __name__ == "__main__":
     plt.plot(emas, label="EMAs")
     plt.legend()
     plt.savefig("./visualizations/trend_indicators.png")
+
+    # Test the volatility indicators
