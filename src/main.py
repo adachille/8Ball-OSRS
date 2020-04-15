@@ -44,7 +44,9 @@ if __name__ == "__main__":
             while not price_history_updated and attempts < 5:
                 try:
                     # Update price history
-                    ge_api.update_price_history_csv(item_id, "./data/")
+                    api_called = ge_api.update_price_history_csv(item_id, "./data/")
+                    if api_called:
+                        sleep_counter += 1
                     price_history_updated = True
                 except Exception as e:
                     # This except is triggered when the issue discussed above occurs,
@@ -55,8 +57,6 @@ if __name__ == "__main__":
                     attempts += 1
                     time.sleep(60)
                 
-            sleep_counter += 1
-
     cannonball_price_history = pd.read_csv(f'./data/{cannonball_id}_price_history.csv')
     cannonball_prices = cannonball_price_history['prices'].to_numpy()
 

@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+from datetime import datetime
 from pathlib import Path
 import time
 
@@ -189,7 +190,21 @@ class OldSchoolGEAPIInterface:
         ----------
         requests.exceptions.HTTPError:
             If the request got an error status - likely due to an invalid id
+
+        Returns
+        -------
+        bool
+            A bool representing whether the api was called and the prices were updates
         """
+        old_prices_df = None
+        try:
+            old_prices_df = pd.read_csv(f"{datapath}{item_id}_price_history.csv", index_col="dates", parse_dates=["dates"])
+            last_updated = old_prices_df.index[-1]
+            if last_updated.date() == datetime.now().date():
+                return False
+        except FileNotFoundError as e:
+            print("Preexisting price_history file not found, creating one")
+
         # Get api data
         price_history = self.get_item_price_history(item_id)
 
@@ -206,12 +221,12 @@ class OldSchoolGEAPIInterface:
         # Get old csv for item and add these dates to it
         # item_csv_path = Path("./runescape_services")
         # print(path.parent)
-        try:
-            old_prices_df = pd.read_csv(f"{datapath}{item_id}_price_history.csv", index_col="dates", parse_dates=["dates"])
+        if old_prices_df is not None:
             # only get the rows that have a date after the last date of old_prices_df
             prices_df = prices_df[prices_df.index > old_prices_df.index[-1]]
             new_prices_df = pd.concat([old_prices_df, prices_df])
             new_prices_df.to_csv(f"{datapath}{item_id}_price_history.csv")
-        except FileNotFoundError as e:
-            print("Preexisting price_history file not found, creating one")
+        else:
             prices_df.to_csv(f"{datapath}{item_id}_price_history.csv")
+        
+        return True
