@@ -11,22 +11,20 @@ if __name__ == "__main__":
     ge_api = OldSchoolGEAPIInterface()
 
     # # refreshes the item ids csv
-    ge_api.get_and_save_item_ids_to_csv('item_ids_04_02_2020.csv') 
+    # ge_api.get_and_save_item_ids_to_csv('item_ids_04_X_2020.csv') 
 
     # Get item ids
-    item_ids = pd.read_csv('item_ids_04_02_2020.csv')
+    item_ids = pd.read_csv('item_ids_04_12_2020.csv')
     print(item_ids.shape)
-    cannonball_id = item_ids[item_ids['name'] == 'Cannonball'].id.values[0]
 
     # # Test the get_item_details method
+    cannonball_id = item_ids[item_ids['name'] == 'Cannonball'].id.values[0]
     item_details = ge_api.get_item_details(cannonball_id)
     print(item_details)
 
-    # # Update price history for cannonballs
-    # ge_api.update_price_history_csv(cannonball_id, "./data/")
-
-    update_all_prices = False
+    update_all_prices = True
     if update_all_prices:
+        print("Updating items")
         # Update all the price histories
         # JANK ALERT: We force the process to sleep every sleep_interval seconds for 
         # sleep_time seconds because the services api starts returning misformed JSONs 

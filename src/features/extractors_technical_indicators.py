@@ -17,8 +17,10 @@ class ExtractorTechnicalIndicators:
 
     Methods
     -------
-    get_simple_moving_average(prices, n)
+    simple_moving_average(prices, n)
         Get the simple moving average of the prices using n as the period
+    exponential_moving_average(prices, n)
+        Get the exponential moving average of the prices using n as the period
 
     """
     def __init__(self):
@@ -42,13 +44,11 @@ class ExtractorTechnicalIndicators:
         -------
         ndarray
             an array of simple moving average values for prices, will have length = len(prices)
-            but will only have len(prices) - n smas, the rest will be nan's
+            but will only have len(prices) - n + 1 smas, the rest will be nan's
         """
-        smas = np.empty(prices.shape)
-        smas[:n] = np.nan # Default the first n values to be nan
-        cumsum = np.cumsum(prices)
-        smas[n:] = (cumsum[n:] - cumsum[:-n]) / n # Get the smas
-        return smas
+        prices_df = pd.Series(prices)
+        smas = prices_df.rolling(window=n).mean()    
+        return smas.to_numpy()
     
     def exponential_moving_average(self, prices, n=12, weighting_factor=None):
         """Get the exponential moving average (EMA) of the prices using n as the period.
@@ -71,24 +71,21 @@ class ExtractorTechnicalIndicators:
         Returns
         -------
         ndarray
-            an array of simple moving average values for prices, will have length = len(prices)
-            but will only have len(prices) - n smas, the rest will be nan's
+            an array of exponential moving average values for prices, will have length = 
+            len(prices) but will only have len(prices) - n + 1 smas, the rest will be nan's
         """
         if weighting_factor is None:
             wf = 2 / (n + 1)
         else:
             wf = weighting_factor
             
-        smas = np.empty(prices.shape)
-        smas[:n] = np.nan # Default the first n values to be nan
-        cumsum = np.cumsum(prices)
-        smas[n:] = (cumsum[n:] - cumsum[:-n]) / n # Get the smas
+        smas = self.simple_moving_average(prices, n)
 
         emas = np.empty(prices.shape)
-        emas[:n] = np.nan # Default the first n values to be nan
-        emas[n] = smas[n]
+        emas[:n-1] = np.nan # Default the first n values to be nan
+        emas[n-1] = smas[n-1]
         # Calculate emas using prices and smas
-        for i in range(n + 1, len(smas)):
+        for i in range(n, len(smas)):
             emas[i] = (prices[i] - emas[i-1]) * wf + emas[i-1]
 
         return emas
@@ -103,8 +100,7 @@ class ExtractorTechnicalIndicators:
         """
         pass
 
-    # TODO: test
-    def std_dev(self, prices):
+    def moving_std_dev(self, prices, n=12):
         """Get the standard deviation of the prices
 
         Standard deviation is a classic volatility technical indicator.
@@ -116,12 +112,15 @@ class ExtractorTechnicalIndicators:
 
         Returns
         -------
-        float
-            the standard deviation of prices
+        ndarray
+            the moving standard of prices, will have length = len(prices) but will only have 
+            len(prices) - n + 1 values, the rest will be nan's
         """
-        return np.std(prices)
+        prices_df = pd.Series(prices)
+        moving_std_dev = prices_df.rolling(window=n).std()
+        print(moving_std_dev)
+        return moving_std_dev.to_numpy()
     
-    # TODO: test
     def bollinger_bands(self, prices, n=20):
         """Get the standard deviation of the prices
 
@@ -135,8 +134,10 @@ class ExtractorTechnicalIndicators:
         Returns
         -------
         (ndarray, ndarray, ndarray)
-            three ndarray's, one with the lower bollinger band, the sma, and one with the upper bollinger band
+            three ndarray's, one with the lower bollinger band, the sma, and one with the upper 
+            bollinger band, each array will have length = len(prices) but will only have 
+            len(prices) - n + 1 values, the rest will be nan's
         """
         sma = self.simple_moving_average(prices, n)
-        std_dev = self.std_dev(prices)
-        return (sma - 2*std_dev, sma, sma + 2*std_dev)
+        moving_std_dev = self.moving_std_dev(prices, n)
+        return (sma - 2*moving_std_dev, sma, sma + 2*moving_std_dev)
