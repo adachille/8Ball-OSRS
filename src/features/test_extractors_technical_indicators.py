@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import pandas as pd
 from extractors_technical_indicators import ExtractorTechnicalIndicators
 
 class TestExtractorTechnicalIndicators: 
@@ -24,6 +25,14 @@ class TestExtractorTechnicalIndicators:
         # Test that the default weighting = 2 / (n + 1) = 0.5
         actual_emas = extractor_ti.exponential_moving_average(test_prices, 3)  
         np.testing.assert_equal(actual_emas, expected_emas)
+    
+    def test_rsi(self):
+        extractor_ti = ExtractorTechnicalIndicators()
+        test_prices = pd.Series([20, 30, 20, 30, 20])
+        expected_rsi = np.array([np.nan, np.nan, np.nan, np.nan, 50.0])
+        actual_rsi = extractor_ti.rsi(test_prices, 4)
+        assert type(actual_rsi) == pd.Series
+        np.testing.assert_equal(actual_rsi, expected_rsi)
     
     def test_moving_std_dev(self):
         extractor_ti = ExtractorTechnicalIndicators()

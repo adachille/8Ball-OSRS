@@ -5,7 +5,7 @@ description documentation for the methods.
 import pandas as pd
 import numpy as np
 
-# TODO: make this file return information in a more specific way, needs a stricter interface
+# TODO: make this file return information as pandas series and take in information as pandas
 class ExtractorTechnicalIndicators:   
     """
     A class used to extract technical indicator using a price signal (price over time)
@@ -21,11 +21,18 @@ class ExtractorTechnicalIndicators:
         Get the simple moving average of the prices using n as the period
     exponential_moving_average(prices, n)
         Get the exponential moving average of the prices using n as the period
+    rsi(self, prices, n)
+        Get the Relative Strength Index (RSI) of the prices using n as the period
+    moving_std_dev(self, prices, n)
+        Get the moving standard deviation of the prices using n as the period
+    bollinger_bands(self, prices, n)
+        Get the Bollinger Bands of the prices using n as the period
 
     """
     def __init__(self):
         print("init")
 
+    ### TREND INDICATORS ###
     def simple_moving_average(self, prices, n=12):
         """Get the simple moving average (SMA) of the prices using n as the period.
 
@@ -42,12 +49,12 @@ class ExtractorTechnicalIndicators:
 
         Returns
         -------
-        ndarray
+        pd.Series
             an array of simple moving average values for prices, will have length = len(prices)
             but will only have len(prices) - n + 1 smas, the rest will be nan's
         """
-        prices_df = pd.Series(prices)
-        smas = prices_df.rolling(window=n).mean()    
+        prices_series = pd.Series(prices)
+        smas = prices_series.rolling(window=n).mean()    
         return smas.to_numpy()
     
     def exponential_moving_average(self, prices, n=12, weighting_factor=None):
@@ -100,6 +107,50 @@ class ExtractorTechnicalIndicators:
         """
         pass
 
+    ### MOMENTUM INDICATORS ###
+    def rsi(self, prices, n=14):
+        """Get the Relative Strength Index, a momentum indicator that measures the magnitude of 
+        recent price changes to evaluate overbought or oversold conditions. The RSI is an 
+        oscillator, moving between two extremes and can have a reading from 0 to 100.
+
+        Traditional interpretation and usage of the RSI are that values of 70 or above indicate
+        that a security is becoming overbought or overvalued and may be primed for a trend reversal
+        or corrective pullback in price. An RSI reading of 30 or below indicates an oversold or 
+        undervalued condition.
+        
+        Parameters:
+        ----------
+        prices : pandas.Series
+            series of prices to get the RSI from
+        n : int
+            the period to use for the RSI
+
+        Returns
+        -------
+        pandas.Series
+            the RSI of the prices, will have length = len(prices) but will only have 
+            len(prices) - n values, the rest will be nan's
+        """
+        # Get price deltas
+        prices_df = pd.DataFrame(data={"prices": prices})
+        prices_df["delta"] = prices_df["prices"] - prices_df["prices"].shift(1)
+
+        
+        # Get up deltas and down deltas
+        up_delta, down_delta = prices_df["delta"].copy(), prices_df["delta"].copy()
+        up_delta[up_delta < 0] = 0
+        down_delta[down_delta > 0] = 0
+        
+        # Get rolling means
+        smas = prices_df.rolling(window=n).mean()    
+        up_rolling = up_delta.rolling(window=n).mean()
+        down_rolling = down_delta.rolling(window=n).mean().abs()
+        rs = up_rolling / down_rolling
+        rsi = 100.0 - (100.0 / (1.0 + rs))
+        return rsi
+
+    ### VOLATILITY INDICATORS ###
+
     def moving_std_dev(self, prices, n=12):
         """Get the standard deviation of the prices
 
@@ -116,9 +167,8 @@ class ExtractorTechnicalIndicators:
             the moving standard of prices, will have length = len(prices) but will only have 
             len(prices) - n + 1 values, the rest will be nan's
         """
-        prices_df = pd.Series(prices)
-        moving_std_dev = prices_df.rolling(window=n).std()
-        print(moving_std_dev)
+        prices_series = pd.Series(prices)
+        moving_std_dev = prices_series.rolling(window=n).std()
         return moving_std_dev.to_numpy()
     
     def bollinger_bands(self, prices, n=20):
