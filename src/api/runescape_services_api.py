@@ -176,7 +176,6 @@ class OldSchoolGEAPIInterface:
         r.raise_for_status()
         return r.json()['daily']
     
-    # TODO: test
     def update_price_history_csv(self, item_id, datapath):
         """ Takes in an item_id and gets the item's price history for the last 6 months. It then performs a union between
         the new price history data and the price history data in the csv associated with the item.
