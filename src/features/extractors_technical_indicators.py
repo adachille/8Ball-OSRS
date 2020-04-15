@@ -42,20 +42,18 @@ class ExtractorTechnicalIndicators:
 
         Parameters
         ----------
-        prices : ndarray
-            numpy array of prices to get the SMA from
+        prices : pd.Series
+            series of prices to get the SMA from
         n : int
             the period to use for the moving average
 
         Returns
         -------
         pd.Series
-            an array of simple moving average values for prices, will have length = len(prices)
+            series of simple moving average values for prices, will have length = len(prices)
             but will only have len(prices) - n + 1 smas, the rest will be nan's
         """
-        prices_series = pd.Series(prices)
-        smas = prices_series.rolling(window=n).mean()    
-        return smas.to_numpy()
+        return prices.rolling(window=n).mean().rename("sma")    
     
     def exponential_moving_average(self, prices, n=12, weighting_factor=None):
         """Get the exponential moving average (EMA) of the prices using n as the period.
@@ -67,8 +65,8 @@ class ExtractorTechnicalIndicators:
 
         Parameters
         ----------
-        prices : ndarray
-            numpy array of prices to get the EMA from
+        prices : pd.Series
+            series of prices to get the EMA from
         n : int
             the period to use for the moving average
         weighting_factor : float
@@ -77,8 +75,8 @@ class ExtractorTechnicalIndicators:
 
         Returns
         -------
-        ndarray
-            an array of exponential moving average values for prices, will have length = 
+        pd.Series
+            series of exponential moving average values for prices, will have length = 
             len(prices) but will only have len(prices) - n + 1 smas, the rest will be nan's
         """
         if weighting_factor is None:
@@ -95,7 +93,7 @@ class ExtractorTechnicalIndicators:
         for i in range(n, len(smas)):
             emas[i] = (prices[i] - emas[i-1]) * wf + emas[i-1]
 
-        return emas
+        return pd.Series(emas).rename("ema")
     
     # TODO: finish implementing
     def moving_average_convergence_divergence(self, prices, n_lt=26, n_st=12):
@@ -142,12 +140,11 @@ class ExtractorTechnicalIndicators:
         down_delta[down_delta > 0] = 0
         
         # Get rolling means
-        smas = prices_df.rolling(window=n).mean()    
         up_rolling = up_delta.rolling(window=n).mean()
         down_rolling = down_delta.rolling(window=n).mean().abs()
         rs = up_rolling / down_rolling
         rsi = 100.0 - (100.0 / (1.0 + rs))
-        return rsi
+        return rsi.rename("rsi")
 
     ### VOLATILITY INDICATORS ###
 
@@ -158,18 +155,16 @@ class ExtractorTechnicalIndicators:
 
         Parameters
         ----------
-        prices : ndarray
-            numpy array of prices to get the standard deviation from
+        prices : pd.Series
+            series of prices to get the standard deviation from
 
         Returns
         -------
-        ndarray
-            the moving standard of prices, will have length = len(prices) but will only have 
-            len(prices) - n + 1 values, the rest will be nan's
+        pd.Series
+            the moving standard deviation of prices, will have length = len(prices) but will only 
+            have len(prices) - n + 1 values, the rest will be nan's
         """
-        prices_series = pd.Series(prices)
-        moving_std_dev = prices_series.rolling(window=n).std()
-        return moving_std_dev.to_numpy()
+        return prices.rolling(window=n).std().rename("moving_std_dev")
     
     def bollinger_bands(self, prices, n=20):
         """Get the standard deviation of the prices
@@ -178,16 +173,18 @@ class ExtractorTechnicalIndicators:
 
         Parameters
         ----------
-        prices : ndarray
-            numpy array of prices to get the Bollinger bands from
+        prices : pd.Series
+            series of prices to get the Bollinger bands from
 
         Returns
         -------
-        (ndarray, ndarray, ndarray)
-            three ndarray's, one with the lower bollinger band, the sma, and one with the upper 
+        (pd.Series, pd.Series, pd.Series)
+            three series, one with the lower bollinger band, the sma, and one with the upper 
             bollinger band, each array will have length = len(prices) but will only have 
             len(prices) - n + 1 values, the rest will be nan's
         """
         sma = self.simple_moving_average(prices, n)
         moving_std_dev = self.moving_std_dev(prices, n)
-        return (sma - 2*moving_std_dev, sma, sma + 2*moving_std_dev)
+        lbb = (sma - 2*moving_std_dev).rename("lbb")
+        ubb = (sma + 2*moving_std_dev).rename("ubb")
+        return (lbb, sma, ubb)
