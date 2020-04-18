@@ -22,7 +22,7 @@ if __name__ == "__main__":
     item_details = ge_api.get_item_details(cannonball_id)
     print(item_details)
 
-    update_all_prices = True
+    update_all_prices = False
     if update_all_prices:
         print("Updating items")
         # Update all the price histories
@@ -58,7 +58,7 @@ if __name__ == "__main__":
                     time.sleep(60)
                 
     cannonball_price_history = pd.read_csv(f'./data/{cannonball_id}_price_history.csv')
-    cannonball_prices = cannonball_price_history['prices'].to_numpy()
+    cannonball_prices = cannonball_price_history['prices']
 
     # Plot trend indicators
     extractor_ti = ExtractorTechnicalIndicators()

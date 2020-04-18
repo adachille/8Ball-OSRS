@@ -5,7 +5,6 @@ description documentation for the methods.
 import pandas as pd
 import numpy as np
 
-# TODO: make this file return information as pandas series and take in information as pandas
 class ExtractorTechnicalIndicators:   
     """
     A class used to extract technical indicator using a price signal (price over time)
@@ -30,7 +29,7 @@ class ExtractorTechnicalIndicators:
 
     """
     def __init__(self):
-        print("init")
+        super()
 
     ### TREND INDICATORS ###
     def simple_moving_average(self, prices, n=12):
