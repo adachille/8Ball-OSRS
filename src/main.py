@@ -69,5 +69,3 @@ if __name__ == "__main__":
     plt.plot(emas, label="EMAs")
     plt.legend()
     plt.savefig("./visualizations/trend_indicators.png")
-
-    # Test the volatility indicators
