@@ -1,12 +1,8 @@
 from price_predictor import PricePredictor
-from features.extractors_technical_indicators import ExtractorTechnicalIndicators
 
 class ManualPricePredictor(PricePredictor):   
     """
-    An abstract class that all Price Predictors must follow. A Price Predictor takes in item_csv's and has the 
-    ability to estimate upcoming returns and determine how best to allocate a portfolio given 
-    these estimated upcoming returns (this data can also be accompanied with risk estimateions, or
-    other information)
+    A Price Predictor that has a manually crafted method for predicting new prices. 
 
     ...
 
@@ -23,7 +19,7 @@ class ManualPricePredictor(PricePredictor):
     """
     def __init__(self):
         required_features = ["prices", "lbb", "ubb"]
-        super().__init__(required_features) # sets self.portfolio to starting_portfolio
+        super().__init__(required_features) # sets self.required_features to required_features
     
     def predict_new_prices(self, item_csv_tuples):
         """Get the estimated prices for the next timestamp for each item using the features in its 
