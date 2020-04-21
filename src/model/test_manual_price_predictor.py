@@ -3,15 +3,14 @@ import numpy as np
 import pandas as pd
 from manual_price_predictor import ManualPricePredictor
 
-class TestManualStrategy: 
+class TestManualPricePredictor: 
     def test_predict_returns(self):
         mpp = ManualPricePredictor()
         test_id = 1
 
         ## Check required features ##
         assert "prices" in mpp.required_features
-        assert "lbb" in mpp.required_features
-        assert "ubb" in mpp.required_features
+        assert "bb" in mpp.required_features
 
         ## Test Manual Price Predictor Behavior ##
         # Given cur_price > upper bollinger band, our manual price predictor expects increase in

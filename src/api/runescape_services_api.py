@@ -92,7 +92,6 @@ class OldSchoolGEAPIInterface:
         r.raise_for_status()
         return r.json()["items"]
 
-    # TODO: Figure out a way to test this function       
     def get_and_save_item_ids_to_csv(self, filename):
         """Saves the id's and associated names of every item in the runescape services GE Database to a
         CSV with filename passed in.

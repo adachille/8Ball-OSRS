@@ -13,21 +13,21 @@ class ManualPricePredictor(PricePredictor):
 
     Methods
     -------
-    predict_new_prices(item_csv_tuples)
+    predict_new_prices(item_features_tuples)
         Get the estimated prices for the next timestamp for each item
 
     """
     def __init__(self):
-        required_features = ["prices", "lbb", "ubb"]
+        required_features = ["prices", "bb"] # Requires prices data and bollinger bands
         super().__init__(required_features) # sets self.required_features to required_features
     
-    def predict_new_prices(self, item_csv_tuples):
+    def predict_new_prices(self, item_features_tuples):
         """Get the estimated prices for the next timestamp for each item using the features in its 
         item_csv.
 
         Parameters
         ----------
-        item_csv_tuples : list(tuple(int, pd.DataFrame))
+        item_features_tuples : list(tuple(int, pd.DataFrame))
             list of tuples, where each tuple has an item id and its price and feature data over
             time in the form of a pandas DataFrames
 
@@ -38,7 +38,7 @@ class ManualPricePredictor(PricePredictor):
         """
         pred_prices = {}
         # Go through each item and predict the returns
-        for item_id, item_csv in item_csv_tuples:
+        for item_id, item_csv in item_features_tuples:
             prices = item_csv["prices"]
 
             ## Our Manual Strategy will be a simple handmade decision tree ##

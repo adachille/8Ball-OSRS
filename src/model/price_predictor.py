@@ -14,7 +14,7 @@ class PricePredictor:
 
     Methods
     -------
-    predict_new_prices(item_csv_tuples)
+    predict_new_prices(item_features_tuples)
         Get the estimated prices for the next timestamp for each item
 
     """
@@ -23,13 +23,13 @@ class PricePredictor:
         super().__init__()
     
     @abstractmethod
-    def predict_new_prices(self, item_csv_tuples):
+    def predict_new_prices(self, item_features_tuples):
         """Get the estimated prices for the next timestamp for each item using the features in its 
         item_csv.
 
         Parameters
         ----------
-        item_csv_tuples : list(tuple(int, pd.DataFrame))
+        item_features_tuples : list(tuple(int, pd.DataFrame))
             list of tuples, where each tuple has an item id and its price and feature data over
             time in the form of a pandas DataFrames
 

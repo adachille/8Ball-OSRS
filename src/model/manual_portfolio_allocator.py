@@ -37,6 +37,7 @@ class ManualPortfolioAllocator(PortfolioAllocator):
         dict
             A dict of item_id's item amounts, represents new allocations
         """
+        # TODO: consider moving the gold addition to the Simulator class
         # Get a DataFrame with the portfolio data and new prices
         portfolio_df = pd.DataFrame(self.portfolio).T.rename(columns={
             0: "cur_prices", 
