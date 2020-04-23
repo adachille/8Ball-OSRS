@@ -11,6 +11,7 @@ class PortfolioAllocatorType(Enum):
     MANUAL = 1
 
 # TODO: create an enum for data features
+# TODO: make portfolio into a class
 class Simulator:   
     """
     A class that is used to run simulations with historical price/feature data and pairs of 
@@ -19,9 +20,9 @@ class Simulator:
 
     Attributes
     ----------
-    ppt : PricePredictorType
+    pp : PricePredictorType
         specificies which PricePredictor class to use
-    pat : PortfolioAllocatorType
+    pa : PortfolioAllocatorType
         specificies which PortfolioAllocator class to use
 
     Methods
@@ -29,22 +30,24 @@ class Simulator:
     extract_features_from_price_history()
         Extracts and returns feature data from the price_history_tuples
     backtest()
-        Backtests the ppt, pat pair using the price_history_tuples and given starting_portfolio
+        Backtests the pp, pa pair using the price_history_tuples and given starting_portfolio
+    portfolio : pd.DataFrame
+        A dataframe with item_id's as indices and item_value and item_amount as columns
 
     """
-    def __init__(self, starting_portfolio, ppt=PricePredictorType.MANUAL, 
-        pat=PortfolioAllocatorType.MANUAL):
+    def __init__(self, starting_portfolio, pp=PricePredictorType.MANUAL, 
+        pa=PortfolioAllocatorType.MANUAL):
         self.portfolio = starting_portfolio
         super()
         
-        if ppt == PricePredictorType.MANUAL:
-            self.ppt = ManualPricePredictor()
+        if pp == PricePredictorType.MANUAL:
+            self.pp = ManualPricePredictor()
         else:
             raise Exception("Invalid PricePredictorType, check the PricePredictorType class to \
                 see available values")
         
-        if pat == PortfolioAllocatorType.MANUAL:
-            self.pat = ManualPortfolioAllocator(self.portfolio)
+        if pa == PortfolioAllocatorType.MANUAL:
+            self.pa = ManualPortfolioAllocator(self.portfolio)
         else:
             raise Exception("Invalid PortfolioAllocatorType, check the PortfolioAllocatorType \
                 class to see available values")
@@ -66,12 +69,12 @@ class Simulator:
 
         """
         item_features_tuples = []
-        req_feats = self.ppt.required_features
+        req_feats = self.pp.required_features
         eti = ExtractorTechnicalIndicators()
 
         # Go through each item and get its item_feature_tuple
         for item_id, price_history in price_history_tuples:
-            prices = price_history["prices"]
+            prices = price_history["price"]
             
             # Get the features needed for the chosen PricePredictor
             feature_series = []
@@ -91,7 +94,7 @@ class Simulator:
             item_features_df = pd.concat([prices] + feature_series, axis=1) # add prices and feature data
             item_features_tuples.append((item_id, item_features_df))
 
-        return item_features_tuples
+        return item_features_tuples        
 
     def backtest(self, price_history_tuples):
         """
@@ -101,12 +104,44 @@ class Simulator:
         price_history_tuples : list(tuple(int, pd.DataFrame))
             list of tuples, where each tuple has an item id and its price data over time in the form
             of a pandas DataFrames
-        portfolio : map
-            A dict of item_id's to allocation tuples (item_value, item_amount)
         
         Returns
         -------
+        list
+            list of portfolio values over time
         
         """
+        port_vals = [] # TODO: make this into a DF with dates as index
+
+        # Get feature data
         item_features_tuples = self.extract_features_from_price_history(price_history_tuples)
-        pass
+        item_ids, item_features_dfs = map(list, zip(*item_features_tuples))
+
+        # First drop the rows with na, as they can't be used
+        for df in item_features_dfs:
+            df.dropna(axis=0, inplace=True)
+        
+        # TODO: figure out a way of doing this that won't cause issues if different item_csvs 
+        # have different ranges in price history.
+        dates = item_features_tuples[0][1].index
+        for date in dates:
+             # Get the item_feature_data up to the current date
+            data_up_to_data = [(id, df.loc[:date]) for id, df in zip(item_ids, item_features_dfs)]
+
+            # Update the portfolio prices to the current day
+            for id, df in data_up_to_data:
+                self.portfolio["price"].at[id] = df["price"].iloc[-1]
+            self.pa.set_portfolio(self.portfolio)
+            
+            # Record portfolio value
+            port_vals.append(self.pa.portfolio_value)
+
+            # Predict prices and get new allocations
+            pred_prices = self.pp.predict_new_prices(data_up_to_data)
+            pred_prices[-1] = 1 # -1 is id for gold, always stays at value of 1
+            new_allocations = self.pa.pick_new_allocations(pred_prices)
+            
+            for id, amount in new_allocations.items():
+                self.portfolio["amount"].at[id] = amount
+
+        return port_vals

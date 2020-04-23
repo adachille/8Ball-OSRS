@@ -18,7 +18,7 @@ class ManualPricePredictor(PricePredictor):
 
     """
     def __init__(self):
-        required_features = ["prices", "bb"] # Requires prices data and bollinger bands
+        required_features = ["price", "bb"] # Requires prices data and bollinger bands
         super().__init__(required_features) # sets self.required_features to required_features
     
     def predict_new_prices(self, item_features_tuples):
@@ -33,13 +33,13 @@ class ManualPricePredictor(PricePredictor):
 
         Returns
         -------
-        dict<int, float>
+        dict<int, int>
             dict of the item id keys and their estimated new price
         """
         pred_prices = {}
         # Go through each item and predict the returns
         for item_id, item_csv in item_features_tuples:
-            prices = item_csv["prices"]
+            prices = item_csv["price"]
 
             ## Our Manual Strategy will be a simple handmade decision tree ##
             lbb = item_csv["lbb"]

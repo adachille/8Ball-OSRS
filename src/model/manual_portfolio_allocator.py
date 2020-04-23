@@ -9,8 +9,8 @@ class ManualPortfolioAllocator(PortfolioAllocator):
 
     Attributes
     ----------
-    portfolio : map
-        A dict of item_id's to allocation tuples (item_value, item_amount)
+    portfolio : pd.DataFrame
+        A dataframe with item_id's as indices and price and amount as columns
 
     Methods
     -------
@@ -35,25 +35,20 @@ class ManualPortfolioAllocator(PortfolioAllocator):
         Returns
         -------
         dict
-            A dict of item_id's item amounts, represents new allocations
+            A dict of item_id's to item amounts, represents new allocations
         """
         # TODO: consider moving the gold addition to the Simulator class
         # Get a DataFrame with the portfolio data and new prices
-        portfolio_df = pd.DataFrame(self.portfolio).T.rename(columns={
-            0: "cur_prices", 
-            1: "amount"
-        })
         pred_prices_df = pd.DataFrame(data=pred_prices.values(), index=pred_prices.keys(), 
-            columns=["pred_prices"])
-        portfolio_df = pd.concat([portfolio_df, pred_prices_df], axis=1)
-        portfolio_df.at[-1, "pred_prices"] = 1 # -1 is id for gold, always stays at value of 1
+            columns=["pred_price"])
+        df = pd.concat([self.portfolio, pred_prices_df], axis=1)
 
         # Get the pred return for each item
-        portfolio_df["delta"] = portfolio_df["pred_prices"] - portfolio_df["cur_prices"]
-        portfolio_df["pred_return"] = portfolio_df["delta"] / portfolio_df["cur_prices"]
+        df["delta"] = df["pred_price"] - df["price"]
+        df["pred_return"] = df["delta"] / df["price"]
         
         # Sort by highest to lowest return
-        portfolio_df.sort_values(by="pred_return", ascending=False, inplace=True)
+        df.sort_values(by="pred_return", ascending=False, inplace=True)
         
         # Iterate through the items from highest to lowest predicted return, and fully allocate
         # until we run out of money, hold the rest as cash
@@ -61,16 +56,16 @@ class ManualPortfolioAllocator(PortfolioAllocator):
         i = 0
         new_amounts = {}
         while money_to_allocate > 0:
-            row = portfolio_df.iloc[i]
+            row = df.iloc[i]
             item_id = row.name
-            new_amounts[item_id] = money_to_allocate // row["cur_prices"]
+            new_amounts[item_id] = money_to_allocate // row["price"]
 
-            money_to_allocate -= new_amounts[item_id] * row["cur_prices"]
+            money_to_allocate -= new_amounts[item_id] * row["price"]
             i += 1
 
         # Add in 0's for the item id's of items where money is not being allocated
         items_allocated_to = list(new_amounts.keys())
-        for item_id in portfolio_df.index:
+        for item_id in df.index:
             if item_id not in items_allocated_to:
                 new_amounts[item_id] = 0
 

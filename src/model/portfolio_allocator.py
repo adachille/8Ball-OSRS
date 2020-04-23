@@ -11,8 +11,8 @@ class PortfolioAllocator:
 
     Attributes
     ----------
-    portfolio : map
-        A dict of item_id's to allocation tuples (item_value, item_amount)
+    portfolio : pd.DataFrame
+        A dataframe with item_id's as indices and price and amount as columns
 
     Methods
     -------
@@ -24,7 +24,7 @@ class PortfolioAllocator:
     """
     def __init__(self, portfolio):
         self.portfolio = portfolio
-        self.portfolio_value = self.get_portfolio_value(portfolio)
+        self.portfolio_value = self.get_portfolio_value()
         super().__init__()
 
     @abstractmethod
@@ -40,7 +40,7 @@ class PortfolioAllocator:
         Returns
         -------
         dict
-            A dict of item_id's item amounts, represents new allocations
+            A dict of item_id's to item amounts, represents new allocations
         """
         pass
 
@@ -49,20 +49,15 @@ class PortfolioAllocator:
 
         Parameters
         ----------
-        portfolio : map
-            A dict of item_id's to allocation tuples (item_value, item_amount)
+        portfolio : pd.DataFrame
+            A dataframe with item_id's as indices and price and amount as columns
 
         """
         self.portfolio = portfolio
-        self.portfolio_value = self.get_portfolio_value(portfolio)
+        self.portfolio_value = self.get_portfolio_value()
 
-    def get_portfolio_value(self, portfolio):
+    def get_portfolio_value(self):
         """Get the value of the inputted portfolio.
-
-        Parameters
-        ----------
-        portfolio : map
-            A dict of item_id's to allocation tuples (item_value, item_amount)
         
         Returns
         -------
@@ -70,5 +65,4 @@ class PortfolioAllocator:
             value of the portfolio
 
         """
-        allocations = np.array(list(portfolio.values())) # N x 2 array
-        return np.sum(allocations[:, 0] * allocations[:, 1])
+        return (self.portfolio["price"] * self.portfolio["amount"]).sum()

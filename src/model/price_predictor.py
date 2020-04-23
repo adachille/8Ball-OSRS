@@ -35,7 +35,7 @@ class PricePredictor:
 
         Returns
         -------
-        dict<int, float>
+        dict<int, int>
             dict of the item id keys and their estimated new price
         """
         pass
