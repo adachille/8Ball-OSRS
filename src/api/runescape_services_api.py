@@ -210,12 +210,12 @@ class OldSchoolGEAPIInterface:
         # Get a DataFrame from api data
         timestamps = list(price_history.keys())
         prices = list(price_history.values())
-        prices_df = pd.DataFrame(data={"timestamps": timestamps, "prices": prices})
+        prices_df = pd.DataFrame(data={"timestamp": timestamps, "price": prices})
         # Convert string timestamps to proper pandas timestamps
-        prices_df["timestamps"] = pd.to_numeric(prices_df["timestamps"]) / 1000 # convert to seconds
+        prices_df["timestamp"] = pd.to_numeric(prices_df["timestamp"]) / 1000 # convert to seconds
         # Convert to dates
-        prices_df["dates"] = pd.to_datetime(prices_df["timestamps"], unit='s')
-        prices_df = prices_df.set_index("dates")
+        prices_df["date"] = pd.to_datetime(prices_df["timestamp"], unit='s')
+        prices_df = prices_df.set_index("date")
 
         # Get old csv for item and add these dates to it
         # item_csv_path = Path("./runescape_services")

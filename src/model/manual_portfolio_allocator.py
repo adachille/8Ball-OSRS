@@ -1,4 +1,4 @@
-from portfolio_allocator import PortfolioAllocator
+from model.portfolio_allocator import PortfolioAllocator
 import pandas as pd
 
 class ManualPortfolioAllocator(PortfolioAllocator):   
@@ -37,7 +37,6 @@ class ManualPortfolioAllocator(PortfolioAllocator):
         dict
             A dict of item_id's to item amounts, represents new allocations
         """
-        # TODO: consider moving the gold addition to the Simulator class
         # Get a DataFrame with the portfolio data and new prices
         pred_prices_df = pd.DataFrame(data=pred_prices.values(), index=pred_prices.keys(), 
             columns=["pred_price"])

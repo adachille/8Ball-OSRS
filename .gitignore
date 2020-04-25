@@ -132,5 +132,5 @@ dmypy.json
 Testing-Notebook.ipynb
 
 # Folders that shouldn't be committed
-data/
-visualizaations/
+data/prices/
+visualizations/

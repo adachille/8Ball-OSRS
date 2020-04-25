@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
 from enum import Enum
-from manual_price_predictor import ManualPricePredictor
-from manual_portfolio_allocator import ManualPortfolioAllocator
-from features.extractors_technical_indicators import ExtractorTechnicalIndicators
+from model.manual_price_predictor import ManualPricePredictor
+from model.manual_portfolio_allocator import ManualPortfolioAllocator
+from model.features.extractors_technical_indicators import ExtractorTechnicalIndicators
+from tqdm import tqdm
 
 class PricePredictorType(Enum):
     MANUAL = 1
@@ -11,7 +12,6 @@ class PortfolioAllocatorType(Enum):
     MANUAL = 1
 
 # TODO: create an enum for data features
-# TODO: make portfolio into a class
 class Simulator:   
     """
     A class that is used to run simulations with historical price/feature data and pairs of 
@@ -71,7 +71,6 @@ class Simulator:
         item_features_tuples = []
         req_feats = self.pp.required_features
         eti = ExtractorTechnicalIndicators()
-
         # Go through each item and get its item_feature_tuple
         for item_id, price_history in price_history_tuples:
             prices = price_history["price"]
@@ -107,11 +106,11 @@ class Simulator:
         
         Returns
         -------
-        list
-            list of portfolio values over time
+        pd.Series
+            series of portfolio values over time
         
         """
-        port_vals = [] # TODO: make this into a DF with dates as index
+        port_vals = []
 
         # Get feature data
         item_features_tuples = self.extract_features_from_price_history(price_history_tuples)
@@ -124,7 +123,7 @@ class Simulator:
         # TODO: figure out a way of doing this that won't cause issues if different item_csvs 
         # have different ranges in price history.
         dates = item_features_tuples[0][1].index
-        for date in dates:
+        for date in tqdm(dates):
              # Get the item_feature_data up to the current date
             data_up_to_data = [(id, df.loc[:date]) for id, df in zip(item_ids, item_features_dfs)]
 
@@ -144,4 +143,4 @@ class Simulator:
             for id, amount in new_allocations.items():
                 self.portfolio["amount"].at[id] = amount
 
-        return port_vals
+        return pd.Series(port_vals).rename("port_vals")
